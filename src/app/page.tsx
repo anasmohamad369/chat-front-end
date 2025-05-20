@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import axios from 'axios';
 
 // Setup socket only once
-const socket = io("http://localhost:3001");
+const socket = io("https://chat-backend-test-wbsa.onrender.com");
 
 interface Message {
   username: string;
@@ -19,11 +19,11 @@ export default function Home() {
   // Load past messages and listen to new ones
   useEffect(() => {
     // 1. Load past messages
-    axios.get('http://localhost:3001/messages')
-      .then((res: any) => {
+    axios.get('https://chat-backend-test-wbsa.onrender.com/messages')
+      .then((res) => {
         setMessages(res.data);
       })
-      .catch((err: any) => console.error('Error fetching messages:', err));
+      .catch((err) => console.error('Error fetching messages:', err));
 
     // 2. Listen for new messages
     socket.on('chat message', (msg: Message) => {
@@ -46,6 +46,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-black">
       <h1 className="text-2xl font-bold mb-4">Real-time Chat</h1>
+
       <input
         placeholder="Enter your name"
         className="border p-2 mb-2 w-64"
