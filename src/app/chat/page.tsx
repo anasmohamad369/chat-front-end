@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, Suspense } from "react"
 import type React from "react"
 
 import { useSearchParams } from "next/navigation"
@@ -17,7 +17,7 @@ interface Message {
   timestamp?: string
 }
 
-export default function ChatPage() {
+function ChatContent() {
   const searchParams = useSearchParams()
   const username = searchParams.get("username") || "Guest"
   const room = searchParams.get("room") || "global"
@@ -84,7 +84,6 @@ export default function ChatPage() {
   const triggerFileInput = () => {
     fileInputRef.current?.click()
   }
-  console.log(messages)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-600 to-blue-700 p-4 md:p-6 lg:p-8">
@@ -109,16 +108,16 @@ export default function ChatPage() {
         <CardContent className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
-              <MessageSquare className=" mb-4 opacity-20" />
+              <MessageSquare className="h-16 w-16 mb-4 opacity-20" />
               <p className="text-center">No messages yet. Start the conversation!</p>
             </div>
           ) : (
             messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.username === username ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[100%] rounded-lg px-4 py-2 shadow-sm ${
+                  className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
                     msg.username === username
-                      ? "bg-[#725ACE] text-white rounded-br-none"
+                      ? "bg-purple-600 text-white rounded-br-none"
                       : "bg-white border rounded-bl-none"
                   }`}
                 >
@@ -142,7 +141,7 @@ export default function ChatPage() {
                   {msg.image && (
                     <div className="mt-2 rounded overflow-hidden">
                       <img
-                        src={msg.image}
+                        src={msg.image || "/placeholder.svg"}
                         alt="Shared image"
                         className="max-w-full rounded cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => window.open(msg.image, "_blank")}
@@ -206,5 +205,17 @@ export default function ChatPage() {
         </div>
       </Card>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-purple-600 to-blue-700 p-4 md:p-6 lg:p-8 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    }>
+      <ChatContent />
+    </Suspense>
   )
 }
