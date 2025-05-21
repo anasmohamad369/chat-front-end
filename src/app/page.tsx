@@ -1,154 +1,95 @@
-'use client';
-import { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+"use client"
+import { useRouter } from "next/navigation"
+import type React from "react"
 
-// Setup socket only once
-const socket = io("https://chat-backend-test-wbsa.onrender.com");
-
-interface Message {
-  username: string;
-  text: string;
-  image?: string;
-  timestamp?: string;
-}
-
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { MessageSquare, Users, ArrowRight } from "lucide-react"
 
 export default function Home() {
-  const [username, setUsername] = useState('');
-  const [roomCode, setRoomCode] = useState('');
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [joined, setJoined] = useState(false);
-  const [image, setImage] = useState<string | null>(null);
+  const [username, setUsername] = useState("")
+  const [roomCode, setRoomCode] = useState("")
+  const router = useRouter()
 
-  console.log(messages);
-  console.log(image);
-  useEffect(() => {
-    if (joined) {
-      socket.on('chat message', (msg: Message) => {
-        setMessages((prev) => [...prev, msg]);
-      });
+  const handleJoin = () => {
+    const finalRoom = roomCode.trim() || "global"
+    router.push(`/chat?username=${encodeURIComponent(username.trim())}&room=${encodeURIComponent(finalRoom)}`)
+  }
 
-      return () => {
-        socket.off('chat message');
-      };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && username.trim()) {
+      handleJoin()
     }
-  }, [joined]);
-
-  const joinRoom = async () => {
-    const finalRoom = roomCode.trim() || 'global';
-    socket.emit('join room', finalRoom);
-  
-    try {
-      const res = await fetch(`http://localhost:3001/messages?room=${finalRoom}`);
-      const data = await res.json();
-      setMessages(data);
-    } catch (err) {
-      console.error("Failed to fetch chat history", err);
-    }
-  
-    setJoined(true);
-  };
-  
-
-  const sendMessage = () => {
-    if (input || image) {
-      const message = {
-        username,
-        text: input,
-        image: image || null,
-        roomCode: roomCode.trim() || null
-      };
-      socket.emit('chat message', message);
-      setInput('');
-      setImage(null);
-    }
-  };
-
+  }
 
   return (
-    <div className="flex flex-col items-center p-6 min-h-screen bg-blue-500/40">
-      {!joined ? (
-        <>
-          <h1 className="text-2xl font-bold mb-4">Join a Chat</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gradient-to-b from-purple-600 to-blue-700">
+      <div className="absolute inset-0 bg-[url('/image.png')] opacity-10 bg-repeat" />
 
-          <input
-            placeholder="Your name"
-            className="border p-2 mb-2 w-64"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            placeholder="Room Code (leave empty for Global Chat)"
-            className="border p-2 mb-4 w-64"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value)}
-          />
-
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={joinRoom}
-          >
-            {roomCode ? 'Join Private Room' : 'Join Global Chat'}
-          </button>
-        </>
-      ) : (
-        <>
-          <h1 className="text-xl font-bold mb-2">
-            Room: {roomCode.trim() || 'Global Chat'}
-          </h1>
-
-          <div className="flex space-x-2">
-            <input
-              placeholder="Type a message"
-              className="border p-2 w-64"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setImage(reader.result as string);
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-              className="border p-2"
-            />
-
-            <button
-              className="bg-blue-500 text-white px-4 rounded"
-              onClick={sendMessage}
+      <div className="w-full max-w-md z-10">
+        <Card className="border-0 shadow-xl bg-white/95 backdrop-blur">
+          <CardHeader className="space-y-1">
+            <div className="flex justify-center mb-2">
+              <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center">
+                <MessageSquare size={32} className="text-purple-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Welcome to ChatRoom</CardTitle>
+            <CardDescription className="text-center">Enter your details to join a conversation</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Your Name
+              </label>
+              <div className="relative">
+                <Input
+                  id="username"
+                  placeholder="Enter your display name"
+                  className="pl-10"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="roomCode" className="text-sm font-medium">
+                Room Code
+              </label>
+              <div className="relative">
+                <Input
+                  id="roomCode"
+                  placeholder="Leave empty for global chat"
+                  className="pl-10"
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
+              <p className="text-xs text-gray-500">Join an existing room or create a new one</p>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button
+              className="w-full bg-gradient-to-r cursor-pointer from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium"
+              onClick={handleJoin}
+              disabled={!username.trim()}
             >
-              Send
-            </button>
-          </div>
+              Join Room
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardFooter>
+        </Card>
 
-          <ul className="mt-4 w-full max-w-lg">
-            {messages.map((msg, idx) => (
-             <li key={idx} className="bg-white my-1 text-black p-2 rounded shadow">
-             <strong>{msg.username}</strong>: {msg.text}
-             {msg.image && (
-               <img src={msg.image} alt="chat-img" className="mt-2 max-w-xs rounded" />
-             )}
-             {msg.timestamp && (
-               <div className="text-xs text-gray-500 mt-1">
-                 {new Date(msg.timestamp).toLocaleTimeString()}
-               </div>
-             )}
-           </li>
-           
-            ))}
-          </ul>
-
-        </>
-      )}
+        <div className="mt-8 text-center text-white/80 text-sm">
+          <p>Connect with friends and start chatting instantly</p>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
