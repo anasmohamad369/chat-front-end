@@ -30,10 +30,13 @@ function ChatContent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect (() =>  {
-    socket.emit("join room", room)
+  
+    if(room) {
+      socket.emit("join room", room)
+    
 
-    fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
-    // fetch(`http://localhost:3001/messages?room=${room}`)
+    // fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
+    fetch(`http://localhost:3001/messages?room=${room}`)
     .then((res) => res.json())
       .then((data) => setMessages(data))
       .catch((err) => console.error("Fetch error", err))
@@ -46,6 +49,11 @@ function ChatContent() {
     return () => {
       socket.off("chat message")
     }
+  }
+  setTimeout(() => {
+    socket.emit("join room", room);
+  }, 200);
+
   }, [room])
 
   useEffect(() => {
@@ -56,20 +64,20 @@ function ChatContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const sendMessage = () => {
-    if (input || image) {
-      socket.emit("chat message", {
-        username,
-        text: input,
-        image: image || null,
-        roomCode: room, // ✅ THIS IS CRITICAL
-      });
-      
-      setInput("")
-      setImage(null)
-      setIsUploading(false)
-    }
-  }
+const sendMessage = () => {
+  if ((!input && !image) || !room) return; // ensure room exists
+
+  socket.emit("chat message", {
+    username,
+    text: input,
+    image: image || null,
+    roomCode: room, // ✅ key must be roomCode
+  });
+
+  setInput("");
+  setImage(null);
+};
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
