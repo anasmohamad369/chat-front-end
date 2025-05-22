@@ -32,8 +32,8 @@ function ChatContent() {
   useEffect (() =>  {
     socket.emit("join room", room)
 
-    // fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
-    fetch(`http://localhost:3001/messages?room=${room}`)
+    fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
+    // fetch(`http://localhost:3001/messages?room=${room}`)
     .then((res) => res.json())
       .then((data) => setMessages(data))
       .catch((err) => console.error("Fetch error", err))
