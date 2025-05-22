@@ -29,13 +29,15 @@ function ChatContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
+  useEffect (() =>  {
     socket.emit("join room", room)
 
-    fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
+    // fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
+    fetch(`http://localhost:3001/messages?room=${room}`)
     .then((res) => res.json())
       .then((data) => setMessages(data))
       .catch((err) => console.error("Fetch error", err))
+
 
     socket.on("chat message", (msg: Message) => {
       setMessages((prev) => [...prev, msg])
@@ -60,8 +62,9 @@ function ChatContent() {
         username,
         text: input,
         image: image || null,
-        roomCode: room,
-      })
+        roomCode: room, // ✅ THIS IS CRITICAL
+      });
+      
       setInput("")
       setImage(null)
       setIsUploading(false)
