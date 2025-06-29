@@ -35,7 +35,7 @@ function ChatContent() {
       socket.emit("join room", room)
     
 
-    fetch(`https://chat-backend-test-wbsa.onrender.com/messages?room=${room}`)
+    fetch(`https://chat-backend-test-production.up.railway.app/messages?room=${room}`)
     // fetch(`http://localhost:3001/messages?room=${room}`)
     .then((res) => res.json())
       .then((data) => setMessages(data))
