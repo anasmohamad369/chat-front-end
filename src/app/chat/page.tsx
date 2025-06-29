@@ -66,7 +66,7 @@ function ChatContent() {
 
 const sendMessage = () => {
   if ((!input && !image) || !room) return; // ensure room exists
-
+  console.log("🔄 Sending message:", { username, input, image, room });
   socket.emit("chat message", {
     username,
     text: input,
@@ -126,7 +126,7 @@ const sendMessage = () => {
             messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.username === username ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
+                  className={`max-w-[80%] rounded-3xl p-2 shadow-sm ${
                     msg.username === username
                       ? "bg-purple-600 text-white rounded-br-none"
                       : "bg-white border rounded-bl-none"
